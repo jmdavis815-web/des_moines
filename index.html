@@ -221,12 +221,14 @@
       </div>
     </div>
     
-    <button id="retryButton" onclick="retryLastAction()">
+    <button id="retryButton" type="button" onclick="retryLastAction()">
       Retry Connection To The Loop
     </button>
   </main>
 
   <script>
+    window.isThinking = false;
+
     async function sendAction() {
       const input = document.getElementById("action");
       const output = document.getElementById("output");
@@ -235,9 +237,10 @@
       const actButton = document.querySelector(".controls button");
       const action = input.value.trim();
 
-      if (!action) return;
+      if (!action || window.isThinking) return;
 
       window.lastAction = action;
+      window.isThinking = true;
 
       retryButton.style.display = "none";
 
@@ -259,6 +262,7 @@
 
         actButton.disabled = false;
         actButton.style.opacity = "1";
+        window.isThinking = false;
 
         if (!response.ok) {
           throw new Error("The loop rejected the request.");
@@ -279,6 +283,7 @@
 
         actButton.disabled = false;
         actButton.style.opacity = "1";
+        window.isThinking = false;
 
               output.innerHTML = `
 <span class="error-text">
@@ -300,7 +305,7 @@ Try reconnecting to the loop.
     function retryLastAction() {
       const input = document.getElementById("action");
 
-      if (window.lastAction) {
+      if (window.lastAction && !window.isThinking) {
         input.value = window.lastAction;
         sendAction();
       }
