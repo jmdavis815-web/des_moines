@@ -93,6 +93,23 @@
       background: linear-gradient(180deg, #aa2626, #4c0c0c);
     }
 
+    #retryButton {
+      display: none;
+      margin-top: 14px;
+      width: 100%;
+      background: linear-gradient(180deg, #5e1010, #250505);
+      border: 1px solid rgba(255, 120, 120, 0.35);
+    }
+
+    #retryButton:hover {
+      background: linear-gradient(180deg, #7c1616, #320808);
+    }
+
+    .error-text {
+      color: #ff9b9b;
+      text-shadow: 0 0 10px rgba(255, 0, 0, 0.35);
+    }
+
     .loading {
       margin-top: 18px;
       display: none;
@@ -203,6 +220,10 @@
         <div class="loading-fill"></div>
       </div>
     </div>
+    
+    <button id="retryButton" onclick="retryLastAction()">
+      Retry Connection To The Loop
+    </button>
   </main>
 
   <script>
@@ -210,31 +231,79 @@
       const input = document.getElementById("action");
       const output = document.getElementById("output");
       const loading = document.getElementById("loading");
+      const retryButton = document.getElementById("retryButton");
+      const actButton = document.querySelector(".controls button");
       const action = input.value.trim();
 
       if (!action) return;
 
+      window.lastAction = action;
+
+      retryButton.style.display = "none";
+
       loading.style.display = "block";
 
-      const response = await fetch("http://localhost:5000/act", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ action })
-      });
+      actButton.disabled = true;
+      actButton.style.opacity = "0.6";
 
-      loading.style.display = "none";
+      try {
+        const response = await fetch("http://localhost:5000/act", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ action })
+        });
 
-      const data = await response.json();
+        loading.style.display = "none";
 
-      if (data.error) {
-        output.textContent = data.error;
-      } else {
-        output.textContent = data.result;
+        actButton.disabled = false;
+        actButton.style.opacity = "1";
+
+        if (!response.ok) {
+          throw new Error("The loop rejected the request.");
+        }
+        
+        const data = await response.json();
+
+        if (data.error) {
+          output.innerHTML =
+            '<span class="error-text">' + data.error + '</span>';
+          retryButton.style.display = "block";
+        } else {
+          output.textContent = data.result;
+        }
+
+      } catch (error) {
+        loading.style.display = "none";
+
+        actButton.disabled = false;
+        actButton.style.opacity = "1";
+
+              output.innerHTML = `
+<span class="error-text">
+The connection to reality was interrupted.
+
+The future failed to resolve.
+
+Try reconnecting to the loop.
+</span>
+        `;
+
+        retryButton.style.display = "block";
+
       }
 
       input.value = "";
+    }
+
+    function retryLastAction() {
+      const input = document.getElementById("action");
+
+      if (window.lastAction) {
+        input.value = window.lastAction;
+        sendAction();
+      }
     }
   </script>
 </body>
