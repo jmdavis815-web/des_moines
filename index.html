@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Des Moines Loop</title>
+    <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top, rgba(90, 0, 0, 0.35), transparent 35%),
+        linear-gradient(180deg, #080808 0%, #120d0d 55%, #050505 100%);
+      color: #e8ded2;
+      font-family: Georgia, "Times New Roman", serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .game {
+      width: min(900px, 92vw);
+      padding: 32px;
+      border: 1px solid rgba(160, 25, 25, 0.45);
+      border-radius: 14px;
+      background: rgba(10, 10, 10, 0.82);
+      box-shadow:
+        0 0 40px rgba(120, 0, 0, 0.3),
+        inset 0 0 30px rgba(0, 0, 0, 0.85);
+    }
+
+    h1 {
+      margin-top: 0;
+      color: #c93b3b;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      text-shadow: 0 0 14px rgba(201, 59, 59, 0.7);
+    }
+
+    #output {
+      min-height: 360px;
+      padding: 22px;
+      white-space: pre-wrap;
+      line-height: 1.55;
+      color: #f1e7dc;
+      background:
+        linear-gradient(rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0.9)),
+        #111;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-left: 4px solid #7b1717;
+      border-radius: 10px;
+      box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.9);
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    #action {
+      flex: 1;
+      padding: 14px;
+      color: #f4e8dd;
+      background: #0b0b0b;
+      border: 1px solid rgba(201, 59, 59, 0.55);
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 14px 22px;
+      color: #fff;
+      background: linear-gradient(180deg, #8a1c1c, #3d0909);
+      border: 1px solid #b23a3a;
+      border-radius: 8px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      cursor: pointer;
+      box-shadow: 0 0 14px rgba(120, 0, 0, 0.45);
+    }
+
+    button:hover {
+      background: linear-gradient(180deg, #aa2626, #4c0c0c);
+    }
+
+    .loading {
+      margin-top: 18px;
+      display: none;
+    }
+
+    .loading-label {
+      margin-bottom: 8px;
+      color: #d8b4b4;
+      font-size: 13px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: 0.85;
+    }
+
+    .loading-bar {
+      height: 14px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(180, 40, 40, 0.35);
+      box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.8);
+    }
+
+    .loading-fill {
+      width: 35%;
+      height: 100%;
+      border-radius: 999px;
+      background:
+        linear-gradient(
+          90deg,
+          #2b0000,
+          #8f1414,
+          #d13b3b,
+          #8f1414,
+          #2b0000
+        );
+      box-shadow: 0 0 16px rgba(180, 20, 20, 0.7);
+      animation: creep 1.8s infinite linear;
+    }
+
+    @keyframes creep {
+      from { transform: translateX(-120%); }
+      to { transform: translateX(320%); }
+    }
+  </style>
+</head>
+<body>
+  <main class="game">
+    <h1>Des Moines Loop</h1>
+
+    <pre id="output">You are asleep in your apartment. Somewhere in the dark, a voice knows your name.</pre>
+
+    <div class="controls">
+      <input id="action" placeholder="What do you do?">
+      <button onclick="sendAction()">Act</button>
+    </div>
+
+    <div class="loading" id="loading">
+      <div class="loading-label">
+        The loop is choosing how the day breaks...
+      </div>
+      <div class="loading-bar">
+        <div class="loading-fill"></div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    async function sendAction() {
+      const input = document.getElementById("action");
+      const output = document.getElementById("output");
+      const loading = document.getElementById("loading");
+      const action = input.value.trim();
+
+      if (!action) return;
+
+      loading.style.display = "block";
+
+      const response = await fetch("http://localhost:5000/act", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ action })
+      });
+
+      loading.style.display = "none";
+
+      const data = await response.json();
+
+      if (data.error) {
+        output.textContent = data.error;
+      } else {
+        output.textContent = data.result;
+      }
+
+      input.value = "";
+    }
+  </script>
+</body>
+</html>
