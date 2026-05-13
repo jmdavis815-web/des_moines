@@ -250,13 +250,19 @@
       actButton.style.opacity = "0.6";
 
       try {
-        const response = await fetch("https://show-racing-alcohol-moscow.trycloudflare.com", {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 90000);
+
+        const response = await fetch("https://show-racing-alcohol-moscow.trycloudflare.com/act", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({ action })
+          body: JSON.stringify({ action }),
+          signal: controller.signal
         });
+
+        clearTimeout(timeoutId);
 
         loading.style.display = "none";
 
@@ -289,9 +295,11 @@
 <span class="error-text">
 The connection to reality was interrupted.
 
-The future failed to resolve.
+Error: ${error.name}
 
-Try reconnecting to the loop.
+The tunnel, Flask server, or Ollama may not be responding.
+
+Try again after the server finishes loading the model.
 </span>
         `;
 
