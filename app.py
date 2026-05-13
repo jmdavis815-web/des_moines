@@ -9,7 +9,7 @@ app = Flask(__name__)
 CORS(app)
 
 OLLAMA_URL = "http://localhost:11434/api/chat"
-MODEL = "qwen2.5-coder:7b"
+MODEL = "qwen2.5:0.5b"
 LEARNING_FILE = Path("learning_memory.json")
 
 game_state = {
