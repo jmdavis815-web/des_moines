@@ -100,11 +100,11 @@ PLAYER ACTION TO EVALUATE:
             "messages": messages,
             "stream": False,
             "options": {
-                "num_predict": 120,
-                "temperature": 0.4,
+                "num_predict": 90,
+                "temperature": 0.2,
             },
         },
-        timeout=75,
+        timeout=180,
     )
     response.raise_for_status()
     return response.json()["message"]["content"]
